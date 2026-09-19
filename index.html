@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cửa Hàng Trực Tuyến</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; padding-bottom: 70px; } /* Tránh bị thanh menu dưới che */
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 flex flex-col min-h-screen">
+
+    <!-- POPUP THÔNG BÁO MỚI (GIỐNG MẪU THAM KHẢO) -->
+    <div id="welcome-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative overflow-hidden">
+            <!-- Nút đóng X góc phải -->
+            <button onclick="closeWelcomeModal()" class="absolute top-4 right-4 w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-bold transition">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center">
+                <h3 class="text-xl font-bold text-gray-800 mb-3 flex items-center justify-center">
+                    <span class="text-blue-500 mr-2">🔔</span> Thông Báo Mới <span class="text-blue-500 ml-2">🔔</span>
+                </h3>
+                
+                <div class="text-xs md:text-sm text-gray-700 mb-6 leading-relaxed space-y-2 text-left bg-gray-50 p-4 rounded-xl border">
+                    <p class="font-bold text-red-600 text-center text-sm">90% ACC TRÊN SHOP ĐỀU LÀ ACC QUỐC TẾ ( GLOBAL )</p>
+                    <p>*YÊU CẦU* quay clip từ lúc <span class="font-bold text-red-600">MUA ACC</span> đến khi <span class="font-bold text-red-600">LOGIN ACC</span> ( <span class="text-green-600 font-semibold">NHẤN MẠNH LẠI TỪ LÚC MUA --> LOGIN QUAY LIỀN KHÔNG QUAY ĐƯỢC TÁCH VIDEO</span> )</p>
+                    <p class="font-bold text-red-600 text-center mt-2">Sai Yêu Cầu = Không Bảo Hành</p>
+                </div>
+
+                <div class="flex space-x-3">
+                    <button onclick="closeWelcomeModal()" class="flex-1 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition shadow-md">
+                        Ở Lại Shop
+                    </button>
+                    <a href="https://zalo.me/0797313096" target="_blank" class="flex-1 bg-white border border-gray-300 text-gray-700 py-3 rounded-xl font-semibold hover:bg-gray-50 transition text-center flex items-center justify-center">
+                        Vào Shop Mới
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- KHUNG ĐĂNG NHẬP / ĐĂNG KÝ -->
+    <div id="auth-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 relative overflow-hidden">
+            <div class="text-center mb-6">
+                <h2 id="auth-title" class="text-2xl font-bold text-indigo-600">Đăng Nhập Tài Khoản</h2>
+                <p class="text-sm text-gray-500 mt-1">Chào mừng bạn quay trở lại với cửa hàng!</p>
+            </div>
+
+            <!-- Form Đăng Nhập -->
+            <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập</label>
+                    <input type="text" id="login-username" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center"><input type="checkbox" id="remember-me" class="mr-2 rounded text-indigo-600"> Ghi nhớ đăng nhập</label>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition">Đăng Nhập</button>
+                <p class="text-center text-sm text-gray-600 mt-4">Chưa có tài khoản? <a href="#" onclick="toggleAuthMode('register')" class="text-indigo-600 font-semibold hover:underline">Đăng ký ngay</a></p>
+            </form>
+
+            <!-- Form Đăng Ký -->
+            <form id="register-form" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tên đăng nhập</label>
+                    <input type="text" id="reg-username" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mật khẩu</label>
+                    <input type="password" id="reg-password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-semibold hover:bg-indigo-700 transition">Đăng Ký</button>
+                <p class="text-center text-sm text-gray-600 mt-4">Đã có tài khoản? <a href="#" onclick="toggleAuthMode('login')" class="text-indigo-600 font-semibold hover:underline">Đăng nhập</a></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- GIAO DIỆN CHÍNH -->
+    <div id="main-app" class="hidden flex flex-col min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                    <div class="bg-indigo-600 text-white p-2 rounded-xl font-bold text-xl"><i class="fa-solid fa-store"></i></div>
+                    <span class="text-xl font-bold text-gray-800">ShopAZ</span>
+                </div>
+                <nav class="hidden md:flex space-x-6 font-medium">
+                    <button onclick="switchTab('home')" class="nav-btn text-indigo-600 hover:text-indigo-600 transition">Trang Chủ</button>
+                    <button onclick="switchTab('deposit')" class="nav-btn text-gray-600 hover:text-indigo-600 transition">Nạp Tiền</button>
+                    <button onclick="switchTab('profile')" class="nav-btn text-gray-600 hover:text-indigo-600 transition">Trang Cá Nhân</button>
+                </nav>
+                <div class="flex items-center space-x-4">
+                    <div class="bg-indigo-50 px-3 py-1.5 rounded-full border border-indigo-100 flex items-center space-x-2 cursor-pointer" onclick="switchTab('deposit')">
+                        <i class="fa-solid fa-wallet text-indigo-600"></i>
+                        <span class="text-sm font-semibold text-indigo-700" id="user-balance">0 đ</span>
+                    </div>
+                    <button onclick="handleLogout()" class="text-gray-500 hover:text-red-600 transition" title="Đăng xuất"><i class="fa-solid fa-right-from-bracket text-lg"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Nội dung chính -->
+        <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
+            
+            <!-- TAB 1: TRANG CHỦ & SẢN PHẨM -->
+            <section id="tab-home" class="tab-content">
+                <!-- BANNER ẢNH GIẢM GIÁ CHẠY NGANG (SLIDER) -->
+                <div class="relative rounded-2xl overflow-hidden mb-8 shadow-lg h-56 md:h-80 bg-gray-900">
+                    <div id="banner-slider" class="w-full h-full flex transition-transform duration-700 ease-in-out">
+                        <!-- Render bằng JS -->
+                    </div>
+                    <div class="absolute bottom-4 left-0 right-0 flex justify-center space-x-2" id="banner-dots"></div>
+                </div>
+
+                <h3 class="text-xl font-bold mb-6 flex items-center"><i class="fa-solid fa-fire text-orange-500 mr-2"></i> Sản Phẩm Nổi Bật</h3>
+                <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <!-- Render bằng JS -->
+                </div>
+            </section>
+
+            <!-- TAB 2: NẠP TIỀN -->
+            <section id="tab-deposit" class="tab-content hidden max-w-4xl mx-auto space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm p-6 md:p-8 border">
+                    <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center"><i class="fa-solid fa-credit-card text-indigo-600 mr-2"></i> Nạp Tiền Vào Tài Khoản</h2>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100 flex flex-col items-center text-center">
+                            <h3 class="font-bold text-indigo-900 mb-2">Quét mã QR để nạp tiền tự động</h3>
+                            <p class="text-xs text-gray-500 mb-4">Sử dụng ứng dụng Ngân hàng quét mã dưới đây</p>
+                            
+                            <div class="bg-white p-3 rounded-xl shadow-sm border mb-4">
+                                <img src="https://api.vietqr.io/image/970422-0123456789-compact2.jpg?accountName=NGUYEN%20VAN%20A&amount=0&addInfo=NAP" alt="QR Code" class="w-48 h-48 object-contain">
+                            </div>
+
+                            <div class="text-left w-full space-y-1.5 text-sm bg-white p-4 rounded-xl border">
+                                <p><strong>Ngân hàng:</strong> MB Bank</p>
+                                <p><strong>Số tài khoản:</strong> <span class="text-indigo-600 font-bold">0123456789</span></p>
+                                <p><strong>Chủ tài khoản:</strong> NGUYEN VAN A</p>
+                                <p><strong>Nội dung chuyển khoản:</strong> <span id="transfer-syntax" class="bg-yellow-100 text-yellow-800 font-bold px-1.5 py-0.5 rounded">NAP [TênTàiKhoản]</span></p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4 flex flex-col justify-between">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Chọn nhanh mệnh giá nạp (VNĐ)</label>
+                                <div class="grid grid-cols-3 gap-3 mb-4">
+                                    <button type="button" onclick="setDepositAmount(50000)" class="deposit-chip border py-2.5 rounded-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition">50,000đ</button>
+                                    <button type="button" onclick="setDepositAmount(100000)" class="deposit-chip border py-2.5 rounded-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition">100,000đ</button>
+                                    <button type="button" onclick="setDepositAmount(200000)" class="deposit-chip border py-2.5 rounded-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition">200,000đ</button>
+                                    <button type="button" onclick="setDepositAmount(500000)" class="deposit-chip border py-2.5 rounded-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition">500,000đ</button>
+                                    <button type="button" onclick="setDepositAmount(1000000)" class="deposit-chip border py-2.5 rounded-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition">1,000,000đ</button>
+                                    <button type="button" onclick="setDepositAmount(2000000)" class="deposit-chip border py-2.5 rounded-lg font-semibold hover:border-indigo-600 hover:text-indigo-600 transition">2,000,000đ</button>
+                                </div>
+
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hoặc nhập số tiền tùy chỉnh</label>
+                                <input type="number" id="custom-deposit-amount" placeholder="Nhập số tiền..." class="w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+
+                            <button onclick="processDeposit()" class="w-full bg-indigo-600 text-white py-3 rounded-lg font-semibold hover:bg-indigo-700 transition shadow-md">Xác Nhận Nạp Tiền (Giả Lập Tức Thì)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lịch sử nạp tiền -->
+                <div class="bg-white rounded-2xl shadow-sm p-6 border">
+                    <h3 class="text-lg font-bold mb-4 flex items-center"><i class="fa-solid fa-clock-rotate-left mr-2 text-indigo-600"></i> Lịch Sử Nạp Tiền</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b text-sm text-gray-500 bg-gray-50">
+                                    <th class="p-3">Mã GD</th>
+                                    <th class="p-3">Số tiền</th>
+                                    <th class="p-3">Phương thức</th>
+                                    <th class="p-3">Thời gian</th>
+                                    <th class="p-3">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deposit-history-list" class="text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: TRANG CÁ NHÂN & LỊCH SỬ MUA HÀNG -->
+            <section id="tab-profile" class="tab-content hidden space-y-6">
+                <div class="bg-white rounded-2xl shadow-sm p-6 border flex flex-col md:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-indigo-100 text-indigo-600 w-16 h-16 rounded-full flex items-center justify-center text-2xl font-bold">
+                            <span id="profile-avatar-char">U</span>
+                        </div>
+                        <div>
+                            <h3 id="profile-username" class="text-xl font-bold text-gray-800">Username</h3>
+                            <p class="text-sm text-gray-500">Thành viên thân thiết</p>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-6 py-4 rounded-xl border flex items-center space-x-6">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider">Số dư hiện tại</p>
+                            <p id="profile-balance" class="text-xl font-bold text-indigo-600">0 đ</p>
+                        </div>
+                        <button onclick="switchTab('deposit')" class="bg-indigo-600 text-white text-sm px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition">Nạp thêm</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl shadow-sm p-6 border">
+                    <h3 class="text-lg font-bold mb-4 flex items-center"><i class="fa-solid fa-bag-shopping mr-2 text-indigo-600"></i> Lịch Sử Mua Hàng</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="border-b text-sm text-gray-500 bg-gray-50">
+                                    <th class="p-3">Mã đơn</th>
+                                    <th class="p-3">Sản phẩm</th>
+                                    <th class="p-3">Giá tiền</th>
+                                    <th class="p-3">Thời gian</th>
+                                    <th class="p-3">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody id="purchase-history-list" class="text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- THANH ĐIỀU HƯỚNG DƯỚI CHO MOBILE (GIỐNG ẢNH MẪU) -->
+        <div class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-40 flex justify-around items-center py-2 px-1">
+            <button onclick="switchTab('home')" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition">
+                <i class="fa-solid fa-house text-lg"></i>
+                <span class="text-[10px] mt-1 font-medium">Trang chủ</span>
+            </button>
+            <button onclick="switchTab('home')" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition">
+                <i class="fa-solid fa-gamepad text-lg"></i>
+                <span class="text-[10px] mt-1 font-medium">Shop</span>
+            </button>
+            <!-- Nút Nạp nổi bật ở giữa -->
+            <button onclick="switchTab('deposit')" class="flex flex-col items-center -mt-5">
+                <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center text-xl hover:scale-105 transition border-4 border-white">
+                    <i class="fa-solid fa-plus"></i>
+                </div>
+                <span class="text-[10px] mt-0.5 font-bold text-indigo-600">Nạp</span>
+            </button>
+            <button onclick="switchTab('profile')" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition">
+                <i class="fa-solid fa-receipt text-lg"></i>
+                <span class="text-[10px] mt-1 font-medium">Đơn hàng</span>
+            </button>
+            <button onclick="switchTab('profile')" class="flex flex-col items-center text-gray-600 hover:text-indigo-600 transition">
+                <i class="fa-solid fa-user text-lg"></i>
+                <span class="text-[10px] mt-1 font-medium">Tôi</span>
+            </button>
+        </div>
+
+        <!-- NÚT PHÁT NHẠC NỀN & NÚT HỖ TRỢ TRÔI NỔI -->
+        <div class="fixed bottom-20 right-6 z-50 flex flex-col space-y-3 items-end">
+            <button onclick="toggleBackgroundMusic()" id="music-toggle-btn" class="w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg flex items-center justify-center text-lg hover:bg-indigo-700 transition hover:scale-110" title="Bật/Tắt nhạc nền">
+                <i class="fa-solid fa-music" id="music-icon"></i>
+            </button>
+            <a href="https://zalo.me/0797313096" target="_blank" class="w-12 h-12 bg-blue-500 text-white rounded-full shadow-lg flex items-center justify-center text-xl hover:bg-blue-600 transition hover:scale-110" title="Trợ giúp qua Zalo">
+                <i class="fa-solid fa-comment-dots"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- THẺ AUDIO PHÁT NHẠC -->
+    <audio id="bg-music" loop>
+        <source src="nhac.mp3" type="audio/mp3">
+    </audio>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const bannerImages = [
+            "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&auto=format&fit=crop&q=80",
+            "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=1200&auto=format&fit=crop&q=80"
+        ];
+        let currentBannerIndex = 0;
+
+        const products = [
+            { id: 1, name: "Tài khoản Blox fruit", price: 69000, image: "https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=500&auto=format&fit=crop&q=60" },
+            { id: 2, name: "Spotify Premium (1 Năm)", price: 299000, image: "https://images.unsplash.com/photo-1614680376593-902f749f7ffc?w=500&auto=format&fit=crop&q=60" },
+            { id: 3, name: "YouTube Premium (6 Tháng)", price: 150000, image: "https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=500&auto=format&fit=crop&q=60" },
+            { id: 4, name: "Key Windows 11 Pro Bản Quyền", price: 120000, image: "https://images.unsplash.com/photo-1629654297299-c8506221ca97?w=500&auto=format&fit=crop&q=60" }
+        ];
+
+        let currentUser = null;
+
+        window.onload = function() {
+            initBannerSlider();
+            const savedUser = localStorage.getItem('shop_current_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+            }
+        };
+
+        function closeWelcomeModal() {
+            document.getElementById('welcome-modal').classList.add('hidden');
+            const savedUser = localStorage.getItem('shop_current_user');
+            if (!savedUser) {
+                document.getElementById('auth-modal').classList.remove('hidden');
+            } else {
+                loginSuccessUI();
+            }
+        }
+
+        function initBannerSlider() {
+            const slider = document.getElementById('banner-slider');
+            const dots = document.getElementById('banner-dots');
+
+            slider.innerHTML = bannerImages.map(img => `
+                <div class="w-full h-full flex-shrink-0">
+                    <img src="${img}" class="w-full h-full object-cover">
+                </div>
+            `).join('');
+
+            dots.innerHTML = bannerImages.map((_, i) => `
+                <button onclick="setBanner(${i})" class="w-3 h-3 rounded-full bg-white/50 transition ${i === 0 ? 'bg-white w-6' : ''}"></button>
+            `).join('');
+
+            setInterval(() => {
+                currentBannerIndex = (currentBannerIndex + 1) % bannerImages.length;
+                updateBannerPosition();
+            }, 3500);
+        }
+
+        function updateBannerPosition() {
+            const slider = document.getElementById('banner-slider');
+            slider.style.transform = `translateX(-${currentBannerIndex * 100}%)`;
+            const dots = document.getElementById('banner-dots').children;
+            for (let i = 0; i < dots.length; i++) {
+                dots[i].className = `w-3 h-3 rounded-full transition ${i === currentBannerIndex ? 'bg-white w-6' : 'bg-white/50'}`;
+            }
+        }
+
+        function setBanner(index) {
+            currentBannerIndex = index;
+            updateBannerPosition();
+        }
+
+        let isPlayingMusic = false;
+        function toggleBackgroundMusic() {
+            const music = document.getElementById('bg-music');
+            const icon = document.getElementById('music-icon');
+            if (isPlayingMusic) {
+                music.pause();
+                icon.className = "fa-solid fa-music";
+                isPlayingMusic = false;
+            } else {
+                music.play().then(() => {
+                    icon.className = "fa-solid fa-volume-high animate-pulse";
+                    isPlayingMusic = true;
+                }).catch(e => alert("Trình duyệt chặn phát nhạc tự động, vui lòng tương tác thêm trên trang!"));
+            }
+        }
+
+        function toggleAuthMode(mode) {
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const authTitle = document.getElementById('auth-title');
+
+            if (mode === 'register') {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+                authTitle.innerText = "Tạo Tài Khoản Mới";
+            } else {
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+                authTitle.innerText = "Đăng Nhập Tài Khoản";
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('reg-username').value.trim();
+            const password = document.getElementById('reg-password').value;
+
+            let users = JSON.parse(localStorage.getItem('shop_users')) || [];
+            if (users.find(u => u.username === username)) {
+                alert("Tên đăng nhập này đã tồn tại!");
+                return;
+            }
+
+            const newUser = { username, password, balance: 0, history: [], depositHistory: [] };
+            users.push(newUser);
+            localStorage.setItem('shop_users', JSON.stringify(users));
+
+            alert("Đăng ký thành công! Vui lòng đăng nhập.");
+            toggleAuthMode('login');
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value.trim();
+            const password = document.getElementById('login-password').value;
+            const remember = document.getElementById('remember-me').checked;
+
+            let users = JSON.parse(localStorage.getItem('shop_users')) || [];
+            let user = users.find(u => u.username === username && u.password === password);
+
+            if (!user) {
+                alert("Tên đăng nhập hoặc mật khẩu không chính xác!");
+                return;
+            }
+
+            if (!user.depositHistory) user.depositHistory = [];
+
+            currentUser = user;
+            if (remember) {
+                localStorage.setItem('shop_current_user', JSON.stringify(user));
+            }
+
+            loginSuccessUI();
+        }
+
+        function loginSuccessUI() {
+            document.getElementById('auth-modal').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            updateUserData();
+            renderProducts();
+            renderHistory();
+            renderDepositHistory();
+            
+            document.getElementById('transfer-syntax').innerText = `NAP ${currentUser.username}`;
+        }
+
+        function handleLogout() {
+            localStorage.removeItem('shop_current_user');
+            currentUser = null;
+            location.reload();
+        }
+
+        function updateUserData() {
+            const formattedBalance = currentUser.balance.toLocaleString('vi-VN') + ' đ';
+            document.getElementById('user-balance').innerText = formattedBalance;
+            document.getElementById('profile-balance').innerText = formattedBalance;
+            document.getElementById('profile-username').innerText = currentUser.username;
+            document.getElementById('profile-avatar-char').innerText = currentUser.username.charAt(0).toUpperCase();
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = products.map(p => `
+                <div class="bg-white rounded-2xl shadow-sm border overflow-hidden flex flex-col justify-between hover:shadow-md transition">
+                    <div>
+                        <img src="${p.image}" alt="${p.name}" class="w-full h-40 object-cover">
+                        <div class="p-4">
+                            <h4 class="font-semibold text-gray-800 mb-1 line-clamp-2">${p.name}</h4>
+                            <p class="text-indigo-600 font-bold text-lg">${p.price.toLocaleString('vi-VN')} đ</p>
+                        </div>
+                    </div>
+                    <div class="p-4 pt-0">
+                        <button onclick="buyProduct(${p.id})" class="w-full bg-indigo-50 text-indigo-600 py-2 rounded-xl font-semibold hover:bg-indigo-600 hover:text-white transition">Mua Ngay</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function setDepositAmount(amount) {
+            document.getElementById('custom-deposit-amount').value = amount;
+        }
+
+        function processDeposit() {
+            const amountInput = document.getElementById('custom-deposit-amount');
+            const amount = parseInt(amountInput.value);
+
+            if (!amount || amount <= 0) {
+                alert("Vui lòng chọn hoặc nhập số tiền hợp lệ!");
+                return;
+            }
+
+            currentUser.balance += amount;
+            
+            const newDeposit = {
+                id: 'NAP' + Math.floor(100000 + Math.random() * 900000),
+                amount: amount.toLocaleString('vi-VN') + ' đ',
+                method: 'Chuyển khoản QR',
+                time: new Date().toLocaleString('vi-VN'),
+                status: 'Thành công'
+            };
+
+            if (!currentUser.depositHistory) currentUser.depositHistory = [];
+            currentUser.depositHistory.unshift(newDeposit);
+
+            updateDatabase();
+            updateUserData();
+            renderDepositHistory();
+            
+            alert(`Nạp thành công ${amount.toLocaleString('vi-VN')} đ vào tài khoản!`);
+            amountInput.value = '';
+        }
+
+        function buyProduct(productId) {
+            const product = products.find(p => p.id === productId);
+            if (currentUser.balance < product.price) {
+                alert("Số dư của bạn không đủ để mua sản phẩm này. Vui lòng nạp thêm tiền!");
+                switchTab('deposit');
+                return;
+            }
+
+            if (confirm(`Xác nhận mua sản phẩm: ${product.name} với giá ${product.price.toLocaleString('vi-VN')} đ?`)) {
+                currentUser.balance -= product.price;
+                
+                const newOrder = {
+                    id: 'DH' + Math.floor(100000 + Math.random() * 900000),
+                    productName: product.name,
+                    price: product.price.toLocaleString('vi-VN') + ' đ',
+                    time: new Date().toLocaleString('vi-VN'),
+                    status: 'Thành công'
+                };
+
+                if (!currentUser.history) currentUser.history = [];
+                currentUser.history.unshift(newOrder);
+
+                updateDatabase();
+                updateUserData();
+                renderHistory();
+                alert("Mua hàng thành công!");
+            }
+        }
+
+        function renderHistory() {
+            const historyList = document.getElementById('purchase-history-list');
+            if (!currentUser.history || currentUser.history.length === 0) {
+                historyList.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Chưa có giao dịch mua hàng nào.</td></tr>`;
+                return;
+            }
+
+            historyList.innerHTML = currentUser.history.map(item => `
+                <tr class="border-b hover:bg-gray-50 transition">
+                    <td class="p-3 font-medium text-indigo-600">${item.id}</td>
+                    <td class="p-3 text-gray-800">${item.productName}</td>
+                    <td class="p-3 font-semibold">${item.price}</td>
+                    <td class="p-3 text-gray-500">${item.time}</td>
+                    <td class="p-3"><span class="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full font-medium">${item.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function renderDepositHistory() {
+            const depositList = document.getElementById('deposit-history-list');
+            if (!currentUser.depositHistory || currentUser.depositHistory.length === 0) {
+                depositList.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400">Chưa có giao dịch nạp tiền nào.</td></tr>`;
+                return;
+            }
+
+            depositList.innerHTML = currentUser.depositHistory.map(item => `
+                <tr class="border-b hover:bg-gray-50 transition">
+                    <td class="p-3 font-medium text-indigo-600">${item.id}</td>
+                    <td class="p-3 font-semibold text-green-600">+${item.amount}</td>
+                    <td class="p-3 text-gray-600">${item.method}</td>
+                    <td class="p-3 text-gray-500">${item.time}</td>
+                    <td class="p-3"><span class="bg-green-100 text-green-700 text-xs px-2.5 py-1 rounded-full font-medium">${item.status}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        function updateDatabase() {
+            let users = JSON.parse(localStorage.getItem('shop_users')) || [];
+            const index = users.findIndex(u => u.username === currentUser.username);
+            if (index !== -1) {
+                users[index] = currentUser;
+                localStorage.setItem('shop_users', JSON.stringify(users));
+                localStorage.setItem('shop_current_user', JSON.stringify(currentUser));
+            }
+        }
+    </script>
+</body>
+</html>
